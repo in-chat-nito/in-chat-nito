@@ -8,7 +8,7 @@ var mysql = require('mysql')
 var conn=db;
 
  
-router.get('/', function(req, res, next) {
+router.post('/', function(req, res, next) {
 	
 	
 	if(req.cookies.userID && req.cookies.username){
