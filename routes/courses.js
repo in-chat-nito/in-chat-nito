@@ -26,7 +26,7 @@ var conn=db;
 // 	}]);
 // }); 
 
-router.get('/', function(req, res, next) {
+router.post('/', function(req, res, next) {
 
 	var userID =req.cookies.userID; //req.cookie.userID;
 	console.log(userID);

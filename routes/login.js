@@ -8,7 +8,7 @@ var mysql = require('mysql')
 var conn=db;
 
  
-router.get('/:name', function(req, res, next) {
+router.post('/:name', function(req, res, next) {
     //console.log(req.params.name);
     var username=req.params.name;
 

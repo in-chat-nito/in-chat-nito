@@ -84,7 +84,7 @@ class App extends React.Component {
     console.log(existing_username);
 
     fetch(`/login/${existing_username}`, {
-      method:'GET',
+      method:'POST',
       header: existing_username
     })
     .then(res => {
@@ -104,7 +104,9 @@ class App extends React.Component {
         this.handleUserSubmit(existing_username);
 
         // fetch list of courses from backend route
-        fetch('/courses')
+        fetch('/courses',{
+          method:'POST'
+        })
         .then(res => res.json())
         .then(courses => this.setState({ courses }))
         .then(test => console.log(this.state.courses))
@@ -142,7 +144,9 @@ createUsername = async(u) => {
       let message = "User has been created";
 
       // fetch list of courses from backend route
-      fetch('/courses')
+      fetch('/courses',{
+        method: 'POST'
+      })
       .then(res => res.json())
       .then(courses => this.setState({ courses }))
       .then(test => console.log(this.state.courses))
