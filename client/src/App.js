@@ -67,7 +67,21 @@ class App extends React.Component {
     socket.emit('join room', room);
   
     this.setState({ room });
+    
     console.log("room " + room + " was clicked");
+
+    //WILL GO TO CHAT
+    this.setState(
+      {
+        page:'chat'
+      }
+    )
+      
+    
+    fetch(`/cookies/chat`,{
+      method: 'POST',
+      header: 'chat'
+    }).then(res =>  console.log(res))
 
    // console.log("Loading messages...."); 
 }
@@ -162,7 +176,7 @@ createUsername = async(u) => {
   }
 
 logOut = (e) => {
-  
+  e.preventDefault();
   fetch(`/logout`,{
     method: 'POST'
   }).then(res => {
@@ -183,6 +197,13 @@ logOut = (e) => {
       });
     })
   })
+
+  //sets page info
+  fetch(`/cookies/login`,{
+    method: 'POST',
+    header: 'courses'
+  }).then(res =>  console.log(res)) 
+
 }
 
 backToCourses = (e) => {
