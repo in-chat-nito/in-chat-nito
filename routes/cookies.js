@@ -18,24 +18,10 @@ router.get('/', function(req, res, next) { //Componentwillmount
 
 	res.status(200).send(JSON.stringify(req.cookies));
 	}
-	res.cookie('username',(rows[0].username).toString());
+	
 
 });
-router.post('/:name', function(req, res, next) { //where join room starts
 
-	var room=req.params.name;
-	res.cookie('chatroom',room);
-	if(room==null)
-	{
-		console.log("No room given");
-		res.status(404).send("No room given");
-	} else{
-
-		res.status(200).send("Room added to cookies");
-	}
-
-
-});
 
 router.post('/:name', function(req, res, next) { //where join room starts
 
