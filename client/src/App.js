@@ -7,7 +7,7 @@ import Logout from "./components/Logout"
 import ChatNav from "./components/ChatNav"
 import MessageForm from "./components/MessageForm.jsx";
 import MessageList from "./components/MessageList.jsx";
-import UsersList from "./components/UsersList.jsx";
+//import UsersList from "./components/UsersList.jsx";
 // import React, { Component } from 'react';
 
 
@@ -34,8 +34,9 @@ class App extends React.Component {
 
   componentWillMount(){
    
-    if(this.state.name === undefined )
-    {
+    //if(this.state.name === undefined )
+   // {
+   //   console.log("User is undefined");
       fetch('/cookies', {
       method:'GET'
       })
@@ -47,12 +48,12 @@ class App extends React.Component {
           console.log(res.username);
           if(res.username === undefined){ //Goes to homepage
             console.log("Going to the login page");
-              //let error = "No user found";
+              let error = "No user found";
              // console.log(error);
-             // document.getElementById('login_error').innerHTML = error;
+              document.getElementById('login_error').innerHTML = error;
           }
           // user was in chatroom and is going to chatroom
-          else if(res.username !== undefined && res.chatroom !== null) {
+          else if(res.username != undefined && res.chatroom !== null) {
             console.log("Going to the chat page");
             this.setState ({
               name: res.username,
@@ -60,12 +61,12 @@ class App extends React.Component {
               activeChat: true,
             }) 
           //  socket.emit('join', this.state.name);
-          //  socket.emit('join room', this.state.room);
+            socket.emit('join room', this.state.room);
             
            // socket.to(this.state.room).emit('message', message);
            
           } 
-          else if(res.username !== undefined && res.chatroom === undefined) { 
+          else if(res.username != undefined && res.chatroom === undefined) { 
             console.log("Going to the courses page");
             
             this.setState ({
@@ -92,22 +93,36 @@ class App extends React.Component {
           .then(test => console.log(this.state.courses))
          
         
-        }  */
+        }   */
 
-      })//res end
-      fetch('/courses',{
+      }) //res end
+      /*fetch(`/cookies`, {
+        method:'GET'
+        }).then(res => res.json())  
+      .then(res =>{
+       socket.emit('leave room',res.chatroom);
+      }) */
+
+      //socket.emit('leave room');
+      /*fetch('/courses',{
         method:'POST'
       })
       .then(res => res.json())
       .then(courses => this.setState({ courses }))
-      .then(test => console.log(this.state.courses))
+      .then(test => console.log(this.state.courses)) */
      
     
     
     
-    }
+   // }//End of if statement
       
       //console.log(this.state);
+     /* fetch('/courses',{
+        method:'POST'
+      })
+      .then(res => res.json())
+      .then(courses => this.setState({ courses }))
+      .then(test => console.log(this.state.courses))  */
      
       
   }  
@@ -162,36 +177,7 @@ class App extends React.Component {
    // console.log("Loading messages...."); 
 }
 
-/*checkCookies = (input)=>{
 
-  if(this.state.name === undefined)
-  {
-    fetch('/cookies', {
-    method:'GET'
-    })
-    .then(res => {
-        
-    
-        console.log(res.status)
-        if(res.status === 404){
-            let error = "No user found";
-            document.getElementById('login_error').innerHTML = error;
-          }
-
-        // if cookie is not null set the state to cookie
-        if(res.status === 200){
-          // setting the state causes the page to be rerendered
-        //this.setState.name= 
-          res= res.json();
-          //this.setState.name =res.username;
-          this.setState({
-            name: res.username
-          })
-        
-        }
-      })
-    }
-} */
 
   // --- LOGIN FUNCTION ---
   getUsername = async(event) => {
@@ -201,7 +187,7 @@ class App extends React.Component {
     // gets userinput from login field and prints name in console
     const existing_username = event.target.elements.name.value;
     console.log(existing_username);
-
+    
     fetch(`/login/${existing_username}`, {
       method:'GET',
       header: existing_username
@@ -229,7 +215,7 @@ class App extends React.Component {
         })
         .then(res => res.json())
         .then(courses => this.setState({ courses }))
-        .then(test => console.log(this.state.courses))
+        .then(test =>  console.log(this.state.courses))
       }
     })
   }
@@ -306,14 +292,20 @@ logOut = (e) => {
 }
 
 backToCourses = (e) => {
+    console.log(this.state.room);
+    socket.emit('leave room',this.state.room);
     this.setState({
+        room:'',
         activeChat : false,
     });
+    
     fetch(`/cookies/chatroom`, {
       method:'DELETE',
       header: "chatroom"
       }).then(res => console.log(res.status))
 
+
+      
 }
 
 switchToChat = (w) => {
