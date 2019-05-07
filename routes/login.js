@@ -12,7 +12,12 @@ var conn=db;
 router.get('/:name', function(req, res, next) {
     //console.log(req.params.name);
     var username=req.params.name;
+    console.log("Username given:" + username );
+    if(username ==undefined){
+        res.status(404).send("User Not input");
+    } else {
 
+    
     conn.query('SELECT * FROM user_table WHERE username= ?',username,function(err,rows){
 
         //runs if err has input after select user
@@ -44,6 +49,7 @@ router.get('/:name', function(req, res, next) {
 
         }
     });
+    }
 
 
 });

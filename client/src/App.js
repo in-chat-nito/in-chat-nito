@@ -7,7 +7,7 @@ import Logout from "./components/Logout"
 import ChatNav from "./components/ChatNav"
 import MessageForm from "./components/MessageForm.jsx";
 import MessageList from "./components/MessageList.jsx";
-//import UsersList from "./components/UsersList.jsx";
+import UsersList from "./components/UsersList.jsx";
 // import React, { Component } from 'react';
 
 
@@ -53,8 +53,9 @@ class App extends React.Component {
               document.getElementById('login_error').innerHTML = error;
           }
           // user was in chatroom and is going to chatroom
-          else if(res.username != undefined && res.chatroom !== null) {
+          else if(res.username !== undefined && res.chatroom !== null) {
             console.log("Going to the chat page");
+            console.log(res.chatroom);
             this.setState ({
               name: res.username,
               room: res.chatroom,
@@ -96,6 +97,8 @@ class App extends React.Component {
         }   */
 
       }) //res end
+
+      console.log("OUTSIDE OF FETCH");
       /*fetch(`/cookies`, {
         method:'GET'
         }).then(res => res.json())  
@@ -129,7 +132,8 @@ class App extends React.Component {
     
 
   componentDidMount(){
-    socket.on('message', message => this.messageReceive(message));
+    socket.on('message',message => this.messageReceive(message));
+    
     socket.on('update', ({users}) => this.chatUpdate(users));
     //console.log(document.cookie);
   }
@@ -144,6 +148,7 @@ class App extends React.Component {
   }
 
   handleUserSubmit(name) {
+    console.log("IN handle user submit");
     if(name) {
         this.setState({name});
         socket.emit('join', name);
@@ -155,6 +160,7 @@ class App extends React.Component {
         const messages = [...this.state.messages, message];
         this.setState({messages});
         socket.emit('message', message);
+        console.log(this.state.messages);
     }
   }
 
@@ -164,6 +170,7 @@ class App extends React.Component {
     //socket.emit('join', this.state.name);
     //socket.emit('join room', this.state.room);
     socket.emit('join room', room);
+  
   
     this.setState({ room });
     console.log("room " + this.state.room + " was clicked");
@@ -292,10 +299,9 @@ logOut = (e) => {
 }
 
 backToCourses = (e) => {
-    console.log(this.state.room);
-    socket.emit('leave room',this.state.room);
+    console.log("BACK TO COURSES" + this.state.room);
+    //socket.emit('leave room',this.state.room);
     this.setState({
-        room:'',
         activeChat : false,
     });
     

@@ -110,6 +110,8 @@ io.on('connection', socket => {
    
        
 });//End of connection
+
+   
   
     socket.on('join room', (num) => {
       console.log(num);
@@ -178,6 +180,7 @@ io.on('connection', socket => {
         }); 
 
         //Broadcasts message to room
+        console.log("Broadcasting to " + room);
         socket.to(room).broadcast.emit('message', {
             text: message.text,
             from: nameinput
@@ -191,10 +194,13 @@ io.on('connection', socket => {
           users: userService.getAllUsers()
       });//end of update
  
+     
 
   socket.on('disconnect', () => {
       userService.removeUser(socket.id);
-      
+     
+     
+
       io.to(socket.room).emit('update', {
           users: userService.getAllUsers()
       });
@@ -202,7 +208,13 @@ io.on('connection', socket => {
     });
       
  
+    socket.on('leave room', (num) => {
+      room=`room${num}`;
+      console.log("This is the chatroom: "+ num);
+      socket.leave(num);//(chatroom);
+      loadMessages.set(room,false)
 
+    }); 
   
 
 
