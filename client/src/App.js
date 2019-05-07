@@ -67,7 +67,7 @@ class App extends React.Component {
     socket.emit('join room', room);
   
     this.setState({ room });
-    
+    console.log(this.state.messages);
     console.log("room " + room + " was clicked");
 
     //WILL GO TO CHAT
@@ -81,7 +81,7 @@ class App extends React.Component {
     fetch(`/cookies/chat`,{
       method: 'POST',
       header: 'chat'
-    }).then(res =>  console.log(res))
+    }).then(res =>  console.log("Course set for chat okay"))
 
    // console.log("Loading messages...."); 
 }
@@ -210,6 +210,7 @@ backToCourses = (e) => {
     this.setState({
         page: 'courses',
         activeChat : false,
+        messages:[]
     });
   
   //SETS COURSES
