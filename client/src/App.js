@@ -25,7 +25,8 @@ class App extends React.Component {
       courses: [],
       messages: [],
       text: '',
-      room: ''
+      room: '',
+      
 
     }; 
     this.onDisconnectStatus = '';
@@ -33,7 +34,7 @@ class App extends React.Component {
 
   componentWillMount(){
    
-    if(this.state.name === undefined)
+    if(this.state.name === undefined )
     {
       fetch('/cookies', {
       method:'GET'
@@ -44,37 +45,71 @@ class App extends React.Component {
       console.log(res);
        
           console.log(res.username);
-          if(res.username === undefined){
-              let error = "No user found";
-              console.log(error);
-              document.getElementById('login_error').innerHTML = error;
+          if(res.username === undefined){ //Goes to homepage
+            console.log("Going to the login page");
+              //let error = "No user found";
+             // console.log(error);
+             // document.getElementById('login_error').innerHTML = error;
           }
-          // user was in chatroom
-          else if(res.username != undefined && res.chatroom !=null) {
+          // user was in chatroom and is going to chatroom
+          else if(res.username !== undefined && res.chatroom !== null) {
+            console.log("Going to the chat page");
             this.setState ({
               name: res.username,
               room: res.chatroom,
               activeChat: true,
             }) 
+          //  socket.emit('join', this.state.name);
+          //  socket.emit('join room', this.state.room);
             
+           // socket.to(this.state.room).emit('message', message);
+           
           } 
-          else if(res.username != undefined && res.chatroom == null) {
+          else if(res.username !== undefined && res.chatroom === undefined) { 
+            console.log("Going to the courses page");
+            
             this.setState ({
               name: res.username,
               activeChat: false,
             }) 
-            
-          } 
-        })//res end
-     } //If statement end
-      //console.log(this.state);
 
+            fetch('/courses',{
+              method:'POST'
+            })
+            .then(res => res.json())
+            .then(courses => this.setState({ courses }))
+            .then(test => console.log(this.state.courses))
+           
+          
+       
+          }/* else {
+          
+          fetch('/courses',{
+            method:'POST'
+          })
+          .then(res => res.json())
+          .then(courses => this.setState({ courses }))
+          .then(test => console.log(this.state.courses))
+         
+        
+        }  */
+
+      })//res end
       fetch('/courses',{
         method:'POST'
       })
       .then(res => res.json())
       .then(courses => this.setState({ courses }))
       .then(test => console.log(this.state.courses))
+     
+    
+    
+    
+    }
+      
+      //console.log(this.state);
+     
+      
   }  
     
 
@@ -111,6 +146,8 @@ class App extends React.Component {
   handleRoomClick = (classID) => {
     // join a room
     const room = classID;
+    //socket.emit('join', this.state.name);
+    //socket.emit('join room', this.state.room);
     socket.emit('join room', room);
   
     this.setState({ room });
@@ -352,6 +389,8 @@ renderChat() {
           </div>
       </div>
     </div>
+   
+  
   );
 }
 

@@ -88,26 +88,109 @@ app.use(function(err, req, res, next) {
   }); */
 
 
-
+  var nameinput,room;
 io.on('connection', socket => {
-  socket.on('join', (name) => {
-    const temp =new UsersService();
-    //temp.room=socket.room;
-    //console.log(temp.room);
-     // userService['room']=temp ;
-      //userService[socket.room]= new UsersService();
-      userService.addUser({
-          id: socket.id,
-          name
-      });
+ // let username;
+
+ socket.on('join', (name) => {
+  const temp =new UsersService();
+   // userService['room']=temp ;
+    //userService[socket.room]= new UsersService();
+    nameinput = name;
+    userService.addUser({
+        id: socket.id,
+        name
+    });
+ 
+
+
+
+    
+
+   
        
-     
+});//End of connection
+  
+    socket.on('join room', (num) => {
+      console.log(num);
+      room = `room${num}`;
+      socket.join(room);
+      //console.log();
+     if(!loadMessages.has(room))
+      {
+        console.log("Messages for: "+ room+" is null.");
+        loadMessages.set(room,false);
+      }
+
+      if(loadMessages.get(room)==false)
+      { 
+        
+        
+      // console.log("Messages for: "+ room+" is false so I will enter it.");
+        
+      // console.log("The value for "+ room+" is " + loadMessages.get(room) );
+        //Looks for previous messages
+        db.query("SELECT * FROM chat_table WHERE chatRoom = ? ORDER BY msgTime ASC LIMIT 20 ",room, function(err,rows){
+          if(err){
+            console.log("error: ",err);
+          } else{
+            console.log("Inside JOIN ROOM");
+            console.log( rows);
+            
+          //For every message received from DB
+          for(var row in rows)
+            {
+            //  console.log("INSIDE JOIN ROOM THis is row : " + rows[row].message);
+              socket.emit('message', {
+                text: rows[row].message,
+                from: rows[row].userName
+              });
+
+            }  
+            
+        }
+        }); //query end
+        loadMessages.set(room,true);
+     }
+    });//End of socket
+
+
+
+
+    socket.on('message', message => {
+        
+      var time=Math.round(new Date().getTime()/1000);
+      console.log(time);
+      
+    //   const {name} = userService.getUserById(socket.id);
+          
+      //Inputs message into db. 
+    // let name = username;
+        let input = [ room,message.text,nameinput,time  ];
+        db.query( 'INSERT INTO chat_table(chatRoom,message,userName,msgTime) VALUES (?,?,?,?)',input,function(err,rows){
+          if(err){
+            console.log("Could not input into db.  "+ err);
+          } else{
+            console.log(JSON.stringify(rows));
+            console.log("Message in DB");
+          }
+          
+        }); 
+
+        //Broadcasts message to room
+        socket.to(room).broadcast.emit('message', {
+            text: message.text,
+            from: nameinput
+        });
+
+      console.log('room :'+ room + ' got message', message);
+    });
        //console.log("Name: "+ name+" Room: " +socket.room);
 
       io.emit('update', {
           users: userService.getAllUsers()
-      });
-  });
+      });//end of update
+ 
 
   socket.on('disconnect', () => {
       userService.removeUser(socket.id);
@@ -115,35 +198,12 @@ io.on('connection', socket => {
       io.to(socket.room).emit('update', {
           users: userService.getAllUsers()
       });
-  });
 
-  socket.on('message', message => {
-    
-    var time=Math.round(new Date().getTime()/1000);
-    console.log(time);
-    
-      const {name} = userService.getUserById(socket.id);
-        
-    //Inputs message into db. 
-      let input = [ room,message.text,name,time  ];
-      db.query( 'INSERT INTO chat_table(chatRoom,message,userName,msgTime) VALUES (?,?,?,?)',input,function(err,rows){
-        if(err){
-          console.log("Could not input into db.  "+ err);
-        } else{
-          console.log(JSON.stringify(rows));
-          console.log("Message in DB");
-        }
-        
-      }); 
+    });
+      
+ 
 
-      //Broadcasts message to room
-      socket.to(room).broadcast.emit('message', {
-          text: message.text,
-          from: name
-      });
-
-     console.log('room :'+ room + ' got message', message);
-  });
+  
 
 
   socket.on('getUsers', () => {
@@ -152,50 +212,9 @@ io.on('connection', socket => {
       });
   });
   
+ 
 
-  let room; // capture the room in our closure
-  socket.on('join room', (num) => {
-    console.log(num);
-    room = `room${num}`;
-    socket.join(room);
-    //console.log();
-    if(!loadMessages.has(room))
-    {
-      console.log("Messages for: "+ room+" is null.");
-      loadMessages.set(room,false);
-    }
-
-    if(loadMessages.get(room)==false)
-    {
-      
-      
-      console.log("Messages for: "+ room+" is false so I will enter it.");
-      
-      console.log("The value for "+ room+" is " + loadMessages.get(room) );
-      //Looks for previous messages
-      db.query("SELECT * FROM chat_table WHERE chatRoom = ? ORDER BY msgTime ASC LIMIT 20 ",room, function(err,rows){
-        if(err){
-          console.log("error: ",err);
-        } else{
-          console.log("Inside JOIN ROOM")
-         // console.log( rows);
-          
-        //For every message received from DB
-        for(var row in rows)
-          {
-          //  console.log("INSIDE JOIN ROOM THis is row : " + rows[row].message);
-            socket.emit('message', {
-              text: rows[row].message,
-              from: rows[row].userName
-            });
-
-          }  
-          
-      }
-      }); //query end
-      loadMessages.set(room,true);
-    }
-   });//End of socket
+ 
 
    
 

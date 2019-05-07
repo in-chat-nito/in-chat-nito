@@ -42,7 +42,7 @@ router.post('/:name', function(req, res, next) { //where join room starts
 router.delete('/:name', function(req, res, next) { //where join room starts
 
 	var key=req.params.name;
-	console.log(key);
+	console.log(req.cookies.chatroom);
 	res.clearCookie(key);
 	if(req.cookies.key!=null)
 	{
