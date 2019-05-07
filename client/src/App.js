@@ -21,7 +21,7 @@ class App extends React.Component {
     this.state = {
       name: undefined,
       activeChat: false,
-      courseID:0,
+      page:'',
       users: [],
       courses: [],
       messages: [],
@@ -162,6 +162,7 @@ createUsername = async(u) => {
   }
 
 logOut = (e) => {
+  
   fetch(`/logout`,{
     method: 'POST'
   }).then(res => {
@@ -186,8 +187,16 @@ logOut = (e) => {
 
 backToCourses = (e) => {
     this.setState({
+        page: 'courses',
         activeChat : false,
     });
+  
+  //SETS COURSES
+    fetch(`/cookies/courses`,{
+      method: 'POST',
+      header: 'courses'
+    }).then(res =>  console.log(res))
+
 }
 
 switchToChat = (w) => {

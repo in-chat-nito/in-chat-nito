@@ -12,7 +12,7 @@ var signupRouter = require('./routes/signup');
 var loginRouter = require('./routes/login');
 var coursesRouter = require('./routes/courses');
 var logoutRouter = require('./routes/logout');
-var cookieRouter = require('./routes/cookie');
+var cookiesRouter = require('./routes/cookies');
 
 
 
@@ -48,7 +48,7 @@ app.use('/signup', signupRouter);
 app.use('/login',loginRouter);
 app.use('/courses',coursesRouter);
 app.use('/logout',logoutRouter);
-app.use('/cookies',cookieRouter);
+app.use('/cookies',cookiesRouter);
 
 app.get('/*',function(req, res, next) {
 	res.sendFile(path.join(__dirname,'client','build','index.html'));
