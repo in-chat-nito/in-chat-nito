@@ -6,7 +6,6 @@ var logger = require('morgan');
 var db= require("./db.js"); 
 var mysql = require('mysql');
 
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var signupRouter = require('./routes/signup');
@@ -15,7 +14,6 @@ var coursesRouter = require('./routes/courses');
 var logoutRouter = require('./routes/logout');
 var cookiesRouter = require('./routes/cookies');
 
-var loadMessages = new Map();
 
 
 const app = require('express')();
@@ -52,12 +50,9 @@ app.use('/courses',coursesRouter);
 app.use('/logout',logoutRouter);
 app.use('/cookies',cookiesRouter);
 
-
 app.get('/*',function(req, res, next) {
 	res.sendFile(path.join(__dirname,'client','build','index.html'));
 });
-
-
 
 
 // catch 404 and forward to error handler
@@ -80,6 +75,7 @@ app.use(function(err, req, res, next) {
   //res.send('error');
   console.log(err);
 });
+
 
 
 //using sendFile to link to our index.html instead of having strings in this file (i.e Hello World)
@@ -111,7 +107,6 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
       userService.removeUser(socket.id);
-      
       io.to(socket.room).emit('update', {
           users: userService.getAllUsers()
       });
@@ -151,53 +146,36 @@ io.on('connection', socket => {
           users: userService.getAllUsers()
       });
   });
-  
+
 
   let room; // capture the room in our closure
   socket.on('join room', (num) => {
     console.log(num);
     room = `room${num}`;
     socket.join(room);
-    //console.log();
-    if(!loadMessages.has(room))
-    {
-      console.log("Messages for: "+ room+" is null.");
-      loadMessages.set(room,false);
-    }
 
-    if(loadMessages.get(room)==false)
-    {
-      
-      
-      console.log("Messages for: "+ room+" is false so I will enter it.");
-      
-      console.log("The value for "+ room+" is " + loadMessages.get(room) );
-      //Looks for previous messages
-      db.query("SELECT * FROM chat_table WHERE chatRoom = ? ORDER BY msgTime ASC LIMIT 20 ",room, function(err,rows){
-        if(err){
-          console.log("error: ",err);
-        } else{
-          console.log("Inside JOIN ROOM")
-         // console.log( rows);
-          
-        //For every message received from DB
-        for(var row in rows)
-          {
-          //  console.log("INSIDE JOIN ROOM THis is row : " + rows[row].message);
-            socket.emit('message', {
-              text: rows[row].message,
-              from: rows[row].userName
-            });
+    //Looks for previous messages
+    db.query("SELECT * FROM chat_table WHERE chatRoom = ? ORDER BY msgTime ASC LIMIT 20 ",room, function(err,rows){
+      if(err){
+        console.log("error: ",err);
+      } else{
+        console.log("Inside JOIN ROOM")
+        console.log( rows);
+        
+       // table = rows;
+       for(var row in rows)
+        {
+        //  console.log("INSIDE JOIN ROOM THis is row : " + rows[row].message);
+          socket.emit('message', {
+            text: rows[row].message,
+            from: rows[row].userName
+          });
 
-          }  
-          
-      }
-      }); //query end
-      loadMessages.set(room,true);
-    }
-   });//End of socket
+        } 
+   }
+    });
 
-   
+  });
 
 });
 
