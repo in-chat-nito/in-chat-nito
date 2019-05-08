@@ -21,121 +21,52 @@ class App extends React.Component {
     this.state = {
       name: undefined,
       activeChat: false,
+      page:'',
       users: [],
       courses: [],
       messages: [],
       text: '',
-      room: '',
-      
+      room: ''
 
     }; 
     this.onDisconnectStatus = '';
   }
 
-  componentWillMount(){
-   
-    //if(this.state.name === undefined )
-   // {
-   //   console.log("User is undefined");
-      fetch('/cookies', {
+  componentWillMount()
+  {
+   /* fetch('/cookies', {
       method:'GET'
       })
       .then(res => res.json())
       .then(res => {
-        
-      console.log(res);
-       
-          console.log(res.username);
-          if(res.username === undefined){ //Goes to homepage
-            console.log("Going to the login page");
-              let error = "No user found";
-             // console.log(error);
-              document.getElementById('login_error').innerHTML = error;
-          }
-          // user was in chatroom and is going to chatroom
-          else if(res.username !== undefined && res.chatroom !== null) {
-            console.log("Going to the chat page");
-            console.log(res.chatroom);
-            this.setState ({
-              name: res.username,
-              room: res.chatroom,
-              activeChat: true,
-            }) 
-          //  socket.emit('join', this.state.name);
-            socket.emit('join room', this.state.room);
-            
-           // socket.to(this.state.room).emit('message', message);
-           
-          } 
-          else if(res.username != undefined && res.chatroom === undefined) { 
-            console.log("Going to the courses page");
-            
-            this.setState ({
-              name: res.username,
-              activeChat: false,
-            }) 
-
-            fetch('/courses',{
-              method:'POST'
-            })
-            .then(res => res.json())
-            .then(courses => this.setState({ courses }))
-            .then(test => console.log(this.state.courses))
-           
-          
-       
-          }/* else {
-          
-          fetch('/courses',{
-            method:'POST'
-          })
-          .then(res => res.json())
-          .then(courses => this.setState({ courses }))
-          .then(test => console.log(this.state.courses))
-         
-        
-        }   */
-
-      }) //res end
-
-      console.log("OUTSIDE OF FETCH");
-      /*fetch(`/cookies`, {
-        method:'GET'
-        }).then(res => res.json())  
-      .then(res =>{
-       socket.emit('leave room',res.chatroom);
+        console.log("Got cookies page " + res.page);
+       // var page =res.page;
+        this.setState({
+          page:res.page,
+          name: res.getUsername
+        });
       }) */
 
-      //socket.emit('leave room');
-      /*fetch('/courses',{
-        method:'POST'
-      })
-      .then(res => res.json())
-      .then(courses => this.setState({ courses }))
-      .then(test => console.log(this.state.courses)) */
-     
-    
-    
-    
-   // }//End of if statement
-      
-      //console.log(this.state);
-     /* fetch('/courses',{
-        method:'POST'
-      })
-      .then(res => res.json())
-      .then(courses => this.setState({ courses }))
-      .then(test => console.log(this.state.courses))  */
-     
-      
-  }  
-    
-
+  }
   componentDidMount(){
-    socket.on('message',message => this.messageReceive(message));
-    
+    socket.on('message', message => this.messageReceive(message));
     socket.on('update', ({users}) => this.chatUpdate(users));
-    //console.log(document.cookie);
+
+    fetch('/cookies', {
+      method:'GET'
+      })
+      .then(res => res.json())
+      .then(res => {
+        console.log("Got cookies page " + res.page);
+       // var page =res.page;
+        this.setState({
+          page: res.page,
+          name: res.getUsername
+        });
+
+       
+      })
+      
   }
 
   messageReceive(message) {
@@ -148,11 +79,15 @@ class App extends React.Component {
   }
 
   handleUserSubmit(name) {
-    console.log("IN handle user submit");
     if(name) {
         this.setState({name});
         socket.emit('join', name);
     }
+    //SETS PAGE TO COURSES
+    fetch(`/cookies/courses`,{
+      method: 'POST',
+      header: 'courses'
+    }).then(res =>  console.log("Courses set as page"))
 }
 
   handleMessageSubmit(message) {
@@ -160,26 +95,30 @@ class App extends React.Component {
         const messages = [...this.state.messages, message];
         this.setState({messages});
         socket.emit('message', message);
-        console.log(this.state.messages);
     }
   }
 
   handleRoomClick = (classID) => {
     // join a room
     const room = classID;
-    //socket.emit('join', this.state.name);
-    //socket.emit('join room', this.state.room);
     socket.emit('join room', room);
   
-  
     this.setState({ room });
-    console.log("room " + this.state.room + " was clicked");
+    console.log(this.state.messages);
+    console.log("room " + room + " was clicked");
 
-    // store room number in cookies
-    fetch(`/cookies/${room}`, {
-      method:'POST',
-      header: room
-      }).then(res => console.log(res.status))
+    //WILL GO TO CHAT
+    this.setState(
+      {
+        page:'chat'
+      }
+    )
+      
+    
+    fetch(`/cookies/chat`,{
+      method: 'POST',
+      header: 'chat'
+    }).then(res =>  console.log("Chat set as page."))
 
    // console.log("Loading messages...."); 
 }
@@ -194,9 +133,9 @@ class App extends React.Component {
     // gets userinput from login field and prints name in console
     const existing_username = event.target.elements.name.value;
     console.log(existing_username);
-    
+
     fetch(`/login/${existing_username}`, {
-      method:'GET',
+      method:'POST',
       header: existing_username
     })
     .then(res => {
@@ -205,10 +144,9 @@ class App extends React.Component {
       if(res.status === 404){
         //this.setState({ name : existing_username })
           let error = "No user found.";
-
           // gets element with id 'login_error" and prints the error on the screen
           document.getElementById('login_error').innerHTML = error;
-        }; 
+        };
 
       // if user exists, store username in state + fetch courses -> redirects to courses page
       if(res.status === 200){
@@ -222,7 +160,7 @@ class App extends React.Component {
         })
         .then(res => res.json())
         .then(courses => this.setState({ courses }))
-        .then(test =>  console.log(this.state.courses))
+        .then(test => console.log(this.state.courses))
       }
     })
   }
@@ -258,7 +196,7 @@ createUsername = async(u) => {
 
       // fetch list of courses from backend route
       fetch('/courses',{
-        method:'POST'
+        method: 'POST'
       })
       .then(res => res.json())
       .then(courses => this.setState({ courses }))
@@ -271,6 +209,12 @@ createUsername = async(u) => {
 
       }
     })
+
+    //SETS PAGE TO COURSES
+    fetch(`/cookies/courses`,{
+      method: 'POST',
+      header: 'courses'
+    }).then(res =>  console.log(res))
 
   }
 
@@ -296,22 +240,28 @@ logOut = (e) => {
       });
     })
   })
+
+  //sets page info
+  fetch(`/cookies/login`,{
+    method: 'POST',
+    header: 'courses'
+  }).then(res =>  console.log("Login set as page"))
+
 }
 
 backToCourses = (e) => {
-    console.log("BACK TO COURSES" + this.state.room);
-    //socket.emit('leave room',this.state.room);
     this.setState({
+        page: 'courses',
         activeChat : false,
+        messages:[]
     });
-    
-    fetch(`/cookies/chatroom`, {
-      method:'DELETE',
-      header: "chatroom"
-      }).then(res => console.log(res.status))
+  
+  //SETS PAGE TO COURSES
+    fetch(`/cookies/courses`,{
+      method: 'POST',
+      header: 'courses'
+    }).then(res =>  console.log("Courses set as page"))
 
-
-      
 }
 
 switchToChat = (w) => {
@@ -321,8 +271,6 @@ switchToChat = (w) => {
     activeChat : true,
     
   })
-
- 
  
   //socket.emit('join',course.courseID , this.state.name);
  //this.handleUserSubmit(this.set.name);
@@ -342,7 +290,7 @@ switchToChat = (w) => {
 renderHomePage(){
   return(
     <div className="wrapper">
-      <HomePage getUsername={this.getUsername} createUsername={this.createUsername} />
+      <HomePage getUsername={this.getUsername} createUsername={this.createUsername}/>
     </div>
   )
 }
@@ -387,27 +335,26 @@ renderChat() {
           </div>
       </div>
     </div>
-   
-  
   );
 }
 
 renderCoursePage() {
   return (
-    <div className = "wrapper">
-    <Logout logOut={this.logOut}/>
-    <ClassList switchToChat={this.switchToChat} courses={this.state.courses} handleRoomClick={this.handleRoomClick} />
+    
+    <div className = "wrapper"> 
+       <Logout logOut={this.logOut}/>
+      <ClassList switchToChat={this.switchToChat} courses={this.state.courses} handleRoomClick={this.handleRoomClick} />
     </div>
+   
   );
 }
 
 render(){
-  
-  if(this.state.name === undefined && this.state.activeChat === false)
+  if(this.state.name === undefined && this.state.activeChat === false)//this.state.page!== 'chat')//this.state.activeChat === false||this.state.page==='login')
     return this.renderHomePage()
-  else if(this.state.name !== undefined && this.state.activeChat === false)
+  else if(this.state.name !== undefined && this.state.activeChat === false)//this.state.page==='courses')//this.state.activeChat === false||this.state.page ==='courses')
     return this.renderCoursePage()
-  else
+  else 
     return this.renderChat()
 }
 
