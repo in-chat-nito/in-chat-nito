@@ -297,10 +297,12 @@ renderChat() {
 
 renderCoursePage() {
   return (
-    <div className = "wrapper">
-    <Logout logOut={this.logOut}/>
-    <ClassList switchToChat={this.switchToChat} courses={this.state.courses} handleRoomClick={this.handleRoomClick} />
+    
+    <div className = "wrapper"> 
+       <Logout logOut={this.logOut}/>
+      <ClassList switchToChat={this.switchToChat} courses={this.state.courses} handleRoomClick={this.handleRoomClick} />
     </div>
+   
   );
 }
 
